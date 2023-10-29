@@ -4,7 +4,7 @@ CXX?=g++
 CXXFLAGS?=--std=c++23 -Wall -fPIC
 LDFLAGS?=-L/lib -L/usr/lib
 
-CXXFLAGS+= -DAPPNAME=speedtest-ubus
+CXXFLAGS+= -DAPPNAME=ubus-bm
 
 INCLUDES+= -I./include -I./jsoncpp/include
 LIBS:=-lubox -lblobmsg_json -lubus -luci -lspeedtestcpp

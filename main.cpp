@@ -13,12 +13,7 @@
 bandwidth::monitor *bm;
 std::mutex bm_mutex;
 bool bm_ok;
-
-bool bm_update(void) {
-	std::lock_guard<std::mutex> guard(bm_mutex);
-	bm_ok = bm -> update();
-	return bm;
-}
+pid_t main_pid = getpid();
 
 static void die_handler(int signum) {
 
@@ -28,10 +23,23 @@ static void die_handler(int signum) {
 		logger::info << "received " << Signal::string(signum) << " signal" << std::endl;
 	else logger::info << "received TERM signal" << std::endl;
 
+	loop_abort.store(true, std::memory_order_relaxed);
+	std::this_thread::sleep_for(std::chrono::milliseconds(SIG_DELAY));
+
 	if ( !uloop_cancelled ) {
 		logger::verbose << "stopping ubus service" << std::endl;
 		uloop_end();
 	}
+}
+
+bool bm_update(void) {
+	std::lock_guard<std::mutex> guard(bm_mutex);
+	bm_ok = bm -> update();
+	if ( !bm_ok ) {
+		logger::error << "cannot access /proc/net/dev. Abort." << std::endl;
+		loop_abort.store(true, std::memory_order_relaxed);
+	}
+	return bm;
 }
 
 int main(const int argc, const char **argv) {
@@ -49,7 +57,9 @@ int main(const int argc, const char **argv) {
 		return 1;
 	}
 
-	std::cout << "ubus bandwidth monitor" << std::endl;
+	std::cout << APP_NAME << " version " << APP_VERSION << "\n" <<
+		"ubus bandwidth monitor\n" <<
+		"author: Oskari Rauta\n" << std::endl;
 
 	Signal::register_handler(die_handler);
 
@@ -78,24 +88,24 @@ int main(const int argc, const char **argv) {
 		return e.code();
 	}
 
-	logger::verbose << "starting main loop" << std::endl;
+	logger::vverbose << "starting main loop" << std::endl;
 	std::thread loop_thread(run_main_loop);
 
-	logger::verbose << "starting ubus service" << std::endl;
+	logger::vverbose << "starting ubus service" << std::endl;
 	uloop_run();
 
 	uloop_done();
 	delete srv;
 
-	logger::verbose << "ubus service has stopped" << std::endl;
-	logger::vverbose << "exiting main loop" << std::endl;
+	logger::vverbose << "ubus service has stopped" << std::endl;
+	logger::debug << "exiting main loop" << std::endl;
 
 	main_loop.set_sig_exit(true);
 
 	while ( main_loop.running())
 		std::this_thread::sleep_for(std::chrono::milliseconds(SIG_DELAY));
 
-	logger::vverbose << "main loop stopped" << std::endl;
+	logger::debug << "main loop stopped" << std::endl;
 
 	loop_thread.join();
 

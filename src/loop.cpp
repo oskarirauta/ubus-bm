@@ -6,6 +6,8 @@
 #include "ubus.hpp"
 #include "loop.hpp"
 
+std::atomic<bool> loop_abort = false;
+
 const std::chrono::seconds get_seconds() {
 
 	return std::chrono::duration_cast<std::chrono::seconds>
@@ -71,9 +73,17 @@ void Loop::run(void) {
 
 	while ( !this -> sig_exit()) {
 
+		if ( loop_abort.load(std::memory_order_relaxed)) {
+			logger::vverbose << "main loop stopping due to failure" << std::endl;
+			this -> set_sig_exit(true);
+			std::cout << "sending sig int for pid " << main_pid << std::endl;
+			kill(main_pid, 2);
+			break;
+		}
+
 		if ( get_seconds() > this -> _next_cycle ) {
 
-			logger::vverbose << "cycle counter triggered" << std::endl;
+			logger::debug << "cycle counter triggered" << std::endl;
 			bm_update();
 		}
 

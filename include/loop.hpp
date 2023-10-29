@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <chrono>
+#include <atomic>
 #include "constants.hpp"
 
 struct Loop {
@@ -37,6 +38,6 @@ struct Loop {
 			trigger_speedtest(false) {}
 };
 
+extern std::atomic<bool> loop_abort;
 extern Loop main_loop;
-
 void run_main_loop(void);
