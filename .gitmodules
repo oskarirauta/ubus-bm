@@ -10,3 +10,6 @@
 [submodule "logger"]
 	path = logger
 	url = https://github.com/oskarirauta/logcpp.git
+[submodule "cmdparser"]
+	path = cmdparser
+	url = https://github.com/oskarirauta/cmdParser.git
