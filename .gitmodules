@@ -13,3 +13,6 @@
 [submodule "cmdparser"]
 	path = cmdparser
 	url = https://github.com/oskarirauta/cmdParser.git
+[submodule "common"]
+	path = common
+	url = https://github.com/oskarirauta/common_cpp.git
