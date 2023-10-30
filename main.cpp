@@ -2,6 +2,7 @@
 
 #include "constants.hpp"
 #include "bandwidth.hpp"
+#include "cmdparser.hpp"
 #include "logger.hpp"
 #include "loop.hpp"
 #include "ubus.hpp"
@@ -9,17 +10,65 @@
 
 bandwidth::monitor *bm;
 
-int main(const int argc, const char **argv) {
+static void version_header(void) {
+
+	 std::cout << APP_NAME << " version " << APP_VERSION << "\n" <<
+		"ubus bandwidth monitor\n" <<
+		"author: Oskari Rauta" << std::endl;
+}
+
+static void usage(const CmdParser::Arg &arg) {
+
+	std::cout << "\nusage: " << arg.cmd << " [args]" << "\n" << std::endl;
+	std::cout << "options:\n" <<
+		" -h, --h                usage\n" <<
+		" -s, --s <socket>       Set the ubus socket to connect to\n" <<
+		" -v, --v                verbose logging\n" <<
+		" -d, --d                debug level logging\n" <<
+		" -version, --version    show version information only\n" <<
+		std::endl;
+}
+
+int main(int argc, char **argv) {
+
+	std::string sock_fn = "";
+	version_header();
+
+	CmdParser cmdparser(argc, argv,
+		{
+			{{ "-version", "--version" }, [](const CmdParser::Arg &arg) { exit(0); }},
+			{{ "-h", "--h", "-help", "--help", "-usage", "--usage" }, [](const CmdParser::Arg &arg) {
+				usage(arg);
+				exit(0);
+			}},
+			{{ "-s", "--s", "-socket", "--socket" }, [&sock_fn](const CmdParser::Arg &arg) {
+				sock_fn = arg.var;
+				if ( access(sock_fn.c_str(), F_OK) == -1 ) {
+					std::cout << "\nFailed to connect to ubus socket. Socket " << sock_fn << " does not exist or is not accessible." << std::endl;
+					exit(1);
+				}
+			}, true },
+			{{ "-v", "--v", "-verbose", "--verbose" }, [](const CmdParser::Arg &arg) {
+				logger::output_level[logger::type::verbose] = true;
+				logger::output_level[logger::type::vverbose] = true;
+			}},
+			{{ "-d", "--d", "-debug", "--debug" }, [](const CmdParser::Arg &arg) {
+				logger::output_level[logger::type::verbose] = true;
+				logger::output_level[logger::type::vverbose] = true;
+				logger::output_level[logger::type::debug] = true;
+			}},
+			{{ "" }, [](const CmdParser::Arg &arg) {
+				std::cout << "unknown argument " << arg.arg << "\n" <<
+						"Try executing " << arg.cmd << " --h for usage" <<
+						std::endl;
+				exit(1);
+			}}
+		});
+
+	cmdparser.parse();
 
 	logger::output_level[logger::type::info] = true;
 	logger::output_level[logger::type::error] = true;
-	logger::output_level[logger::type::verbose] = true;
-	logger::output_level[logger::type::vverbose] = true;
-	logger::output_level[logger::type::debug] = true;
-
-	std::cout << APP_NAME << " version " << APP_VERSION << "\n" <<
-		"ubus bandwidth monitor\n" <<
-		"author: Oskari Rauta\n" << std::endl;
 
 	bm = new bandwidth::monitor;
 	if ( !bm -> update()) {
@@ -34,7 +83,7 @@ int main(const int argc, const char **argv) {
 	ubus::service *srv;
 
 	try {
-		srv = new ubus::service;
+		srv = new ubus::service(sock_fn);
 	} catch ( ubus::exception &e ) {
 		logger::error << e.what() << std::endl;
 		delete bm;
@@ -64,7 +113,7 @@ int main(const int argc, const char **argv) {
 	logger::vverbose << "ubus service has stopped" << std::endl;
 
 	delete bm;
-	logger::vverbose << "exiting" << std::endl;
+	logger::info << "exiting" << std::endl;
 
 	return 0;
 }

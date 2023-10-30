@@ -14,7 +14,7 @@ int ubus_get(const std::string& method, const std::string& msg, std::string& res
 			ifd_name = json_msg["interface"].ToString();
 	}
 
-	logger::debug << "called ubus::" << method << " for interface " << ( ifd_name.empty() ? "(empty)" : ifd_name ) << std::endl;
+	logger::vverbose << "called ubus::" << method << " for interface " << ( ifd_name.empty() ? "(empty)" : ifd_name ) << std::endl;
 
 	json::JSON answer;
 	bool found = false;
@@ -80,7 +80,7 @@ int ubus_get(const std::string& method, const std::string& msg, std::string& res
 
 int ubus_list(const std::string& method, const std::string& msg, std::string& result) {
 
-	logger::debug << "called ubus::" << method << std::endl;
+	logger::vverbose << "called ubus::" << method << std::endl;
 
 	json::JSON json;
 	std::lock_guard<std::mutex> guard(bm_mutex);
