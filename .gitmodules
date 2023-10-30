@@ -4,9 +4,6 @@
 [submodule "ubus"]
 	path = ubus
 	url = https://github.com/oskarirauta/ubuscpp.git
-[submodule "signal"]
-	path = signal
-	url = https://github.com/oskarirauta/signal_cpp.git
 [submodule "logger"]
 	path = logger
 	url = https://github.com/oskarirauta/logcpp.git
