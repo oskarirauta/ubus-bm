@@ -1,7 +1,6 @@
 #include "json.hpp"
+#include "loop.hpp"
 #include "logger.hpp"
-#include "shared.hpp"
-
 #include "ubus_funcs.hpp"
 
 int ubus_get(const std::string& method, const std::string& msg, std::string& result) {

@@ -5,5 +5,3 @@
 
 const std::string APP_NAME = APPNAME_STR;
 const std::string APP_VERSION = "0.96.0";
-const int DEFAULT_DELAY = 950;
-const int SIG_DELAY = 100;
