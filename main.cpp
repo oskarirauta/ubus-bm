@@ -34,6 +34,8 @@ int main(int argc, char **argv) {
 	std::string sock_fn = "";
 	version_header();
 
+	logger::loglevel(logger::info);
+
 	CmdParser cmdparser(argc, argv,
 		{
 			{{ "-version", "--version" }, [](const CmdParser::Arg &arg) { exit(0); }},
@@ -49,13 +51,10 @@ int main(int argc, char **argv) {
 				}
 			}, true },
 			{{ "-v", "--v", "-verbose", "--verbose" }, [](const CmdParser::Arg &arg) {
-				logger::output_level[logger::type::verbose] = true;
-				logger::output_level[logger::type::vverbose] = true;
+				logger::loglevel(logger::vverbose);
 			}},
 			{{ "-d", "--d", "-debug", "--debug" }, [](const CmdParser::Arg &arg) {
-				logger::output_level[logger::type::verbose] = true;
-				logger::output_level[logger::type::vverbose] = true;
-				logger::output_level[logger::type::debug] = true;
+				logger::loglevel(logger::debug);
 			}},
 			{{ "" }, [](const CmdParser::Arg &arg) {
 				std::cout << "unknown argument " << arg.arg << "\n" <<
@@ -66,9 +65,6 @@ int main(int argc, char **argv) {
 		});
 
 	cmdparser.parse();
-
-	logger::output_level[logger::type::info] = true;
-	logger::output_level[logger::type::error] = true;
 
 	bm = new bandwidth::monitor;
 	if ( !bm -> update()) {
