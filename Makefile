@@ -1,7 +1,7 @@
 all: world
 
 CXX?=g++
-CXXFLAGS?=--std=c++23 -Wall -fPIC
+CXXFLAGS?=--std=c++20 -Wall -fPIC
 LDFLAGS?=-L/lib -L/usr/lib
 
 INCLUDES+= -I./include -I./jsoncpp/include
@@ -20,6 +20,8 @@ OBJS:= \
 	objs/loop.o objs/main.o
 
 world: ubus-bm
+
+$(shell mkdir -p objs)
 
 objs/ubus_funcs.o: src/ubus_funcs.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<;
