@@ -4,3 +4,15 @@
 [submodule "ubus"]
 	path = ubus
 	url = https://github.com/oskarirauta/ubus_cpp.git
+[submodule "logger"]
+	path = logger
+	url = https://github.com/oskarirauta/logger_cpp.git
+[submodule "cmdparser"]
+	path = cmdparser
+	url = https://github.com/oskarirauta/cmdparser_cpp.git
+[submodule "common"]
+	path = common
+	url = https://github.com/oskarirauta/common_cpp.git
+[submodule "bandwidth"]
+	path = bandwidth
+	url = https://github.com/oskarirauta/bandwidth_cpp.git
