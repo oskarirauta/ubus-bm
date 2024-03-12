@@ -38,4 +38,5 @@ ubus-bm: $(COMMON_OBJS) $(LOGGER_OBJS) $(SIGNAL_OBJS) $(UBUS_SRV_OBJS) $(JSON_OB
 
 .PHONY: clean
 clean:
-	rm -f objs/*.o ubus-bm
+	@rm -rf objs
+	@rm ubus-bm
