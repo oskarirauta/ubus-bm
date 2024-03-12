@@ -1,15 +1,6 @@
-[submodule "logger"]
-	path = logger
-	url = https://github.com/oskarirauta/logcpp.git
-[submodule "cmdparser"]
-	path = cmdparser
-	url = https://github.com/oskarirauta/cmdParser.git
 [submodule "common"]
 	path = common
 	url = https://github.com/oskarirauta/common_cpp.git
-[submodule "bandwidth"]
-	path = bandwidth
-	url = https://github.com/oskarirauta/bandwidthcpp.git
 [submodule "json"]
 	path = json
 	url = https://github.com/oskarirauta/json_cpp.git
