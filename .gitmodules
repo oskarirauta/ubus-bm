@@ -1,9 +1,3 @@
-[submodule "jsoncpp"]
-	path = jsoncpp
-	url = https://github.com/oskarirauta/SimpleJSON
-[submodule "ubus"]
-	path = ubus
-	url = https://github.com/oskarirauta/ubuscpp.git
 [submodule "logger"]
 	path = logger
 	url = https://github.com/oskarirauta/logcpp.git
