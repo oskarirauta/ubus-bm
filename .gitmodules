@@ -10,3 +10,9 @@
 [submodule "bandwidth"]
 	path = bandwidth
 	url = https://github.com/oskarirauta/bandwidthcpp.git
+[submodule "json"]
+	path = json
+	url = https://github.com/oskarirauta/json_cpp.git
+[submodule "ubus"]
+	path = ubus
+	url = https://github.com/oskarirauta/ubus_cpp.git
