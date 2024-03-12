@@ -7,16 +7,26 @@ int ubus_get(const std::string& method, const std::string& msg, std::string& res
 
 	std::string ifd_name;
 
+	logger::debug["ubus::get"] << "ubus call received" << std::endl;
+
 	if ( !msg.empty()) {
 
-		json::JSON json_msg = json::JSON::Load(msg);
-		if ( json_msg.size() != 0 && json_msg.hasKey("interface") && json_msg["interface"].IsString())
-			ifd_name = json_msg["interface"].ToString();
+		try {
+
+			JSON json = JSON::parse(msg);
+			if ( json.contains("interface") && json["interface"].is_convertible(JSON::TYPE::STRING))
+				ifd_name = json["interface"].to_string();
+
+		} catch ( const JSON::exception& e ) {
+
+			ifd_name = "";
+			logger::error["ubus::get"] << "failed to parse json message" << logger::detail(e.what()) << std::endl;
+		}
 	}
 
-	logger::vverbose << "called ubus::" << method << " for interface " << ( ifd_name.empty() ? "(empty)" : ifd_name ) << std::endl;
+	logger::vverbose["ubus::get"] << "called for interface " << ( ifd_name.empty() ? "(empty)" : ifd_name ) << std::endl;
 
-	json::JSON answer;
+	JSON json;
 	bool found = false;
 
 	std::lock_guard<std::mutex> guard(bm_mutex);
@@ -35,54 +45,55 @@ int ubus_get(const std::string& method, const std::string& msg, std::string& res
 		uint64_t rxM = rx * 8;
 		uint64_t txM = tx * 8;
 
-		answer[ifd.name()] = {
-			"rx", {
-				"bytes", rx_bytes,
-				"kilobytes", (uint64_t)(rx_bytes / 1024),
-				"megabytes", (uint64_t)((rx_bytes / 1024) / 1024),
-				"packets", ifd.rx_packets(),
-				"errors", ifd.rx_errors(),
-				"rate", {
-					"Bytes", rx,
-					"KBytes", (uint64_t)(rx / 1024),
-					"MBytes", (uint64_t)((rx / 1024) / 1024),
-					"b", rxM,
-					"k", (uint64_t)(rxM / 1024),
-					"m", (uint64_t)((rxM / 1024) / 1024)
-				}
-			},
-			"tx", {
-				"bytes", tx_bytes,
-				"kilobytes", (uint64_t)(tx_bytes / 1024),
-				"megabytes", (uint64_t)((tx_bytes / 1024) / 1024),
-				"packets", ifd.tx_packets(),
-				"errors", ifd.tx_errors(),
-				"rate", {
-					"Bytes", tx,
-					"KBytes", (uint64_t)(tx / 1024),
-					"MBytes", (uint64_t)((tx / 1024) / 1024),
-					"b", txM,
-					"k", (uint64_t)(txM / 1024),
-					"m", (uint64_t)((txM / 1024) / 1024)
-				}
-			}
-		};
+		json[ifd.name()] = JSON::Object({
+			{ "rx", JSON::Object({
+				{ "bytes", (long long)rx_bytes },
+				{ "kilobytes", (long long)(rx_bytes / 1024) },
+				{ "megabytes", (long long)((rx_bytes / 1024) / 1024) },
+				{ "packets", (long long)ifd.rx_packets() },
+				{ "errors", (long long)ifd.rx_errors() },
+				{ "rate", JSON::Object({
+					{ "Bytes", (long long)rx },
+					{ "KBytes", (long long)(rx / 1024) },
+					{ "MBytes", (long long)((rx / 1024) / 1024) },
+					{ "b", (long long)rxM },
+					{ "k", (long long)(rxM / 1024) },
+					{ "m", (long long)((rxM / 1024) / 1024) }
+				})}
+			})},
+			{ "tx", JSON::Object({
+				{ "bytes", (long long)tx_bytes },
+				{ "kilobytes", (long long)(tx_bytes / 1024) },
+				{ "megabytes", (long long)((tx_bytes / 1024) / 1024) },
+				{ "packets", (long long)ifd.tx_packets() },
+				{ "errors", (long long)ifd.tx_errors() },
+				{ "rate", JSON::Object({
+					{ "Bytes", (long long)tx },
+					{ "KBytes", (long long)(tx / 1024) },
+					{ "MBytes", (long long)((tx / 1024) / 1024) },
+					{ "b", (long long)txM },
+					{ "k", (long long)(txM / 1024) },
+					{ "m", (long long)((txM / 1024) / 1024) }
+				})}
+			})}
+		});
 	}
 
 	if ( !found ) {
-		answer["error"] = "interface not found";
-		logger::debug << "ubus::get for interface " << ifd_name << " error, interface not found" << std::endl;
+
+		json["error"] = "interface not found";
+		logger::debug["ubus::get"] << "call for interface " << ifd_name << " error, interface not found" << std::endl;
 	}
 
-	result = answer.dumpMinified();
+	result = json.dump(false);
 	return 0;
 }
 
 int ubus_list(const std::string& method, const std::string& msg, std::string& result) {
 
-	logger::vverbose << "called ubus::" << method << std::endl;
+	logger::debug["ubus::list"] << "ubus call received" << std::endl;
 
-	json::JSON json;
+	JSON json;
 	std::lock_guard<std::mutex> guard(bm_mutex);
 
 	for ( auto &ifd : bm -> interfaces()) {
@@ -94,41 +105,41 @@ int ubus_list(const std::string& method, const std::string& msg, std::string& re
 		uint64_t rxM = rx * 8;
 		uint64_t txM = tx * 8;
 
-		json[ifd.name()] = {
-			"rx", {
-				"bytes", rx_bytes,
-				"kilobytes", (uint64_t)(rx_bytes / 1024),
-				"megabytes", (uint64_t)((rx_bytes / 1024) / 1024),
-				"packets", ifd.rx_packets(),
-				"errors", ifd.rx_errors(),
-				"rate", {
-					"Bytes", rx,
-					"KBytes", (uint64_t)(rx / 1024),
-					"MBytes", (uint64_t)((rx / 1024) / 1024),
-					"b", rxM,
-					"k", (uint64_t)(rxM / 1024),
-					"m", (uint64_t)((rxM / 1024) / 1024)
-				}
-			},
-			"tx", {
-				"bytes", tx_bytes,
-				"kilobytes", (uint64_t)(tx_bytes / 1024),
-				"megabytes", (uint64_t)((tx_bytes / 1024) / 1024),
-				"packets", ifd.tx_packets(),
-				"errors", ifd.tx_errors(),
-				"rate", {
-					"Bytes", tx,
-					"KBytes", (uint64_t)(tx / 1024),
-					"MBytes", (uint64_t)((tx / 1024) / 1024),
-					"b", txM,
-					"k", (uint64_t)(txM / 1024),
-					"m", (uint64_t)((txM / 1024) / 1024)
-				}
-			}
-		};
+		json[ifd.name()] = JSON::Object({
+			{ "rx", JSON::Object({
+				{ "bytes", (long long)rx_bytes },
+				{ "kilobytes", (long long)(rx_bytes / 1024) },
+				{ "megabytes", (long long)((rx_bytes / 1024) / 1024) },
+				{ "packets", (long long)ifd.rx_packets() },
+				{ "errors", (long long)ifd.rx_errors() },
+				{ "rate", JSON::Object({
+					{ "Bytes", (long long)rx },
+					{ "KBytes", (long long)(rx / 1024) },
+					{ "MBytes", (long long)((rx / 1024) / 1024) },
+					{ "b", (long long)rxM },
+					{ "k", (long long)(rxM / 1024) },
+					{ "m", (long long)((rxM / 1024) / 1024) }
+				})}
+			})},
+			{ "tx", JSON::Object({
+				{ "bytes", (long long)tx_bytes },
+				{ "kilobytes", (long long)(tx_bytes / 1024) },
+				{ "megabytes", (long long)((tx_bytes / 1024) / 1024) },
+				{ "packets", (long long)ifd.tx_packets() },
+				{ "errors", (long long)ifd.tx_errors() },
+				{ "rate", JSON::Object({
+					{ "Bytes", tx },
+					{ "KBytes", (long long)(tx / 1024) },
+					{ "MBytes", (long long)((tx / 1024) / 1024) },
+					{ "b", txM },
+					{ "k", (long long)(txM / 1024) },
+					{ "m", (long long)((txM / 1024) / 1024) }
+				})}
+			})}
+		});
 
 	}
 
-	result = json.dumpMinified();
+	result = json.dump(false);
 	return 0;
 }

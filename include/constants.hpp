@@ -3,4 +3,4 @@
 #include <string>
 
 const std::string APP_NAME = "ubus-bm";
-const std::string APP_VERSION = "0.98.0";
+const std::string APP_VERSION = "0.99.0";
