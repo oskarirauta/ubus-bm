@@ -1,11 +1,12 @@
-# ubus-bm
+[![License:MIT](https://img.shields.io/badge/License-MIT-blue?style=plastic)](LICENSE)
+### ubus-bm
 ubus bandwidth monitor
 
 Very minimal bandwidth monitor for Openwrt.
 Exposes usage reports through ubus.
 Written in C++
 
-### usage
+## <sub>usage</sub>
 ```
 usage: /tmp/ubus-bm [args]
 
@@ -67,6 +68,3 @@ and
 	}
 }
 ```
-
-### License
-MIT
