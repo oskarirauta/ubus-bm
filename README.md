@@ -6,6 +6,13 @@ Very minimal bandwidth monitor for Openwrt.
 Exposes usage reports through ubus.
 Written in C++
 
+### NOTE
+
+ubus-bm is now archived and isn't developed any further. ubus-bm has now
+been integrated with [systembus](https://github.com/oskarirauta/systembus) and
+all future development happens there. Repository is left for people who
+need standalone ubus-bm.
+
 ## <sub>usage</sub>
 ```
 usage: /tmp/ubus-bm [args]
